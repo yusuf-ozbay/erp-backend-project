@@ -1,0 +1,17 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/erpdb
+    username: erp
+    password: erp
+  jpa:
+    hibernate:
+      ddl-auto: update   # geliştirme aşamasında tabloyu otomatik yaratır
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    open-in-view: false
+
+logging:
+  level:
+    org.hibernate.SQL: debug
+    org.hibernate.orm.jdbc.bind: trace
