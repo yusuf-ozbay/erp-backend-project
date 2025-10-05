@@ -42,7 +42,7 @@ public class CustomerServiceImpl implements CustomerService {
             throw new BusinessException(1001, "Email zaten kayıtlı");
         }
         CustomerEntity entity = customerMapper.toEntity(customerDto);
-        entity.setBonusBalance(BigDecimal.ZERO); // başlangıç bonusu sıfır
+        entity.setBonus(BigDecimal.ZERO); // başlangıç bonusu sıfır
         CustomerEntity saved = customerRepository.save(entity);
         return customerMapper.toDto(saved);
     }
@@ -55,7 +55,7 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public List<CustomerDto> listCustomers(BigDecimal minBonus, BigDecimal maxBonus) {
         if (minBonus != null && maxBonus != null) {
-            return customerMapper.toDtoList(customerRepository.findByBonusBalanceBetween(minBonus, maxBonus));
+            return customerMapper.toDtoList(customerRepository.findByBonusBetween(minBonus, maxBonus));
         }
         return customerMapper.toDtoList(customerRepository.findAll());
     }
@@ -81,8 +81,8 @@ public class CustomerServiceImpl implements CustomerService {
         bonusRepository.save(bonus);
 
         // Customer bonus güncelle
-        BigDecimal updatedBalance = customer.getBonusBalance().add(request.getAmount());
-        customer.setBonusBalance(updatedBalance);
+        BigDecimal updatedBalance = customer.getBonus().add(request.getAmount());
+        customer.setBonus(updatedBalance);
         customerRepository.save(customer);
 
         // BonusTransaction kaydı

@@ -14,6 +14,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 )
 @EnableJpaRepositories(basePackages = {
         "erp.crmmodule.dao",
+        "erp.invoicemodule.dao"
 
 })
 @EntityScan(basePackages = {

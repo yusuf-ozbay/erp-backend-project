@@ -14,7 +14,6 @@ import java.util.List;
  */
 @Mapper(componentModel = "spring")
 public interface BonusTransactionMapper {
-    BonusTransactionMapper INSTANCE = Mappers.getMapper(BonusTransactionMapper.class);
 
     BonusTransactionDto toDto(BonusTransactionEntity entity);
     List<BonusTransactionDto> toDtoList(List<BonusTransactionEntity> entities);

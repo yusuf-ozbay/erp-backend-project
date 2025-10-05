@@ -17,6 +17,6 @@ public class CustomerEntity extends AbstractEntity {
     @Column(nullable = false, unique = true, length = 150)
     private String email;
 
-    @Column(name = "bonus_balance", nullable = false)
-    private BigDecimal bonusBalance = BigDecimal.ZERO;
+    @Column(nullable = false)
+    private BigDecimal bonus = BigDecimal.ZERO;
 }
