@@ -1,7 +1,5 @@
 package erp.crmmodule.services;
 
-
-
 import erp.commonmodule.exception.BusinessException;
 import erp.crmmodule.dao.BonusDao;
 import erp.crmmodule.dao.BonusTransactionDao;
@@ -60,38 +58,88 @@ public class CustomerServiceImpl implements CustomerService {
         return customerMapper.toDtoList(customerRepository.findAll());
     }
 
+
+
+//    @Override
+//    public List<CustomerDto> listCustomers(BigDecimal minBonus, BigDecimal maxBonus){
+//
+//        // Specification<CustomerEntity> objesi oluşturulur.
+//        Specification<CustomerEntity> spec = (root, query, cb) -> {
+//            List<Predicate> predicates = new ArrayList<>();
+//
+//            // 1. Minimum Bonus Filtresi (minBonus parametresi varsa uygulanır)
+//            if (minBonus != null) {
+//                // CustomerEntity'deki "bonusBalance" alanının, minBonus değerinden BÜYÜK veya EŞİT olmasını şart koşar (>=)
+//                predicates.add(cb.greaterThanOrEqualTo(root.get("bonusBalance"), minBonus));
+//            }
+//
+//            // 2. Maksimum Bonus Filtresi (maxBonus parametresi varsa uygulanır)
+//            if (maxBonus != null) {
+//                // CustomerEntity'deki "bonusBalance" alanının, maxBonus değerinden KÜÇÜK veya EŞİT olmasını şart koşar (<=)
+//                predicates.add(cb.lessThanOrEqualTo(root.get("bonusBalance"), maxBonus));
+//            }
+//
+//            // Oluşturulan tüm şartları (Predicate) mantıksal AND ile birleştirir.
+//            // Eğer Predicates listesi boşsa, cb.and() tüm kayıtları döndürür.
+//            return cb.and(predicates.toArray(new Predicate[0]));
+//        };
+//
+//        // Repository'deki findAll(Specification) metodu çağrılır.
+//        List<CustomerEntity> customers = customerRepository.findAll(spec);
+//
+//        // Sonucu DTO listesine dönüştürerek döndür.
+//        return customerMapper.toDtoList(customers);
+//    }
+
+
+
+
     /**
      * Müşteriye bonus ekler
      * - Dokümanda: "POST /api/customers/{id}/bonus"
      * - Bonus tablosuna kayıt açılır
-     * - Customer bonus_balance güncellenir
+     * - Customer bonus güncellenir
      * - BonusTransaction kaydı oluşturulur
+     * - Negatif veya sıfır bonus kabul edilmez (doküman gereği)
      */
     @Override
     @Transactional
     public CustomerDto addBonus(Long customerId, BonusRequestDto request) {
+        // 1️⃣ Müşteri kontrolü
         CustomerEntity customer = customerRepository.findById(customerId)
                 .orElseThrow(() -> new BusinessException(1002, "Müşteri bulunamadı"));
 
-        // Bonus kaydı
+        // 2️⃣ Negatif veya sıfır bonus kontrolü
+        if (request.getAmount() == null || request.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new BusinessException(1004, "Negatif veya sıfır bonus eklenemez");
+        }
+
+        // 3️⃣ Bonus kaydı oluştur (Bonus tablosuna)
         BonusEntity bonus = new BonusEntity();
         bonus.setCustomer(customer);
         bonus.setAmount(request.getAmount());
         bonus.setDescription(request.getDescription());
         bonusRepository.save(bonus);
 
-        // Customer bonus güncelle
+        // 4️⃣ Customer bonus bakiyesini güncelle
         BigDecimal updatedBalance = customer.getBonus().add(request.getAmount());
+
+        // 💡 (Ek güvenlik) Negatif bonus oluşmaması için koruma
+        if (updatedBalance.compareTo(BigDecimal.ZERO) < 0) {
+            throw new BusinessException(1005, "Bonus bakiyesi sıfırın altına düşemez");
+        }
+
         customer.setBonus(updatedBalance);
         customerRepository.save(customer);
 
-        // BonusTransaction kaydı
+        // 5️⃣ BonusTransaction kaydı oluştur (audit log)
         BonusTransactionEntity tx = new BonusTransactionEntity();
         tx.setCustomer(customer);
         tx.setAmount(request.getAmount());
         tx.setDescription("Bonus eklendi: " + request.getDescription());
         bonusTransactionRepository.save(tx);
 
+        // 6️⃣ DTO dön
         return customerMapper.toDto(customer);
     }
 

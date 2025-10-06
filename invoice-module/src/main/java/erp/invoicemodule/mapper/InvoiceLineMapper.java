@@ -10,13 +10,13 @@ import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface InvoiceLineMapper {
-    InvoiceLineMapper INSTANCE = Mappers.getMapper(InvoiceLineMapper.class);
 
     InvoiceLineDto toDto(InvoiceLineEntity entity);
     InvoiceLineEntity toEntity(InvoiceLineDto dto);
 
     List<InvoiceLineDto> toDtoList(List<InvoiceLineEntity> entities);
     List<InvoiceLineEntity> toEntityList(List<InvoiceLineDto> dtos);
+
 }
 
 

@@ -33,63 +33,77 @@ public class InvoiceServiceImpl implements InvoiceService {
     private final InvoiceLineMapper invoiceLineMapper;
 
     /**
-     * Fatura oluşturma
-     * - Dokümanda: "Fatura kesilmesi: Satış → bonus harcama, İade → bonus geri alma"
-     * - İş mantığı:
-     *   1) Müşteri bulunur
-     *   2) Fatura + satırları kaydedilir
-     *   3) InvoiceType'a göre bonus güncellenir
-     *   4) BonusTransaction kaydedilir
+     * createInvoice:
+     * - Fatura kaydeder
+     * - Fatura tipine göre bonusu düşer veya ekler
+     * - BonusTransaction (audit) oluşturur
+     * - Bonus negatif olamaz (kontrol)
      */
     @Override
     @Transactional
     public InvoiceDto createInvoice(InvoiceRequestDto request) {
-        // 1) Müşteri bul
+        // 1️⃣ Müşteri bulunur
         CustomerEntity customer = customerRepository.findById(request.getCustomerId())
                 .orElseThrow(() -> new BusinessException(2001, "Müşteri bulunamadı"));
 
-        // 2) Fatura entity oluştur
+        // 2️⃣ Fatura entity oluşturulur
         InvoiceEntity invoice = new InvoiceEntity();
         invoice.setCustomer(customer);
-        invoice.setType(InvoiceType.valueOf(request.getType())); // Enum kontrolü
+        invoice.setType(InvoiceType.valueOf(request.getType()));
         invoice.setTotalAmount(request.getAmount());
 
-        // 3) Fatura satırlarını map et
+        // 3️⃣ Fatura satırlarını map et (InvoiceLineDto → InvoiceLineEntity)
         List<InvoiceLineEntity> lineEntities = invoiceLineMapper.toEntityList(request.getLines());
         lineEntities.forEach(line -> line.setInvoice(invoice));
         invoice.setLines(lineEntities);
 
-        // 4) Bonus iş mantığı
+        // 4️⃣ Geçersiz bonus tutarı kontrolü (negatif amount)
+        if (request.getAmount().compareTo(BigDecimal.ZERO) < 0) {
+            throw new BusinessException(2003, "Negatif bonus tutarı ile işlem yapılamaz");
+        }
+
+        // 5️⃣ Bonus iş mantığı
         BigDecimal amount = request.getAmount();
+        String txDescription; // BonusTransaction için açıklama
+
         switch (invoice.getType()) {
             case RETAIL_SALE:
             case WHOLESALE_SALE:
-                // Satış: bonus düşülür
+                // Satış → bonus harcanır
                 if (customer.getBonus().compareTo(amount) < 0) {
                     throw new BusinessException(2002, "Yetersiz bonus bakiyesi");
                 }
                 customer.setBonus(customer.getBonus().subtract(amount));
+                txDescription = "Bonus harcandı (fatura: " + invoice.getType() + ")";
                 break;
 
             case RETAIL_RETURN:
             case WHOLESALE_RETURN:
-                // İade: bonus eklenir
+                // İade → bonus geri eklenir
                 customer.setBonus(customer.getBonus().add(amount));
+                txDescription = "Bonus iade edildi (fatura: " + invoice.getType() + ")";
                 break;
+
+            default:
+                throw new BusinessException(2004, "Geçersiz fatura tipi");
         }
 
-        // 5) BonusTransaction kaydı
+        // 6️⃣ Bonus negatif olamaz (güncel bakiye kontrolü)
+        if (customer.getBonus().compareTo(BigDecimal.ZERO) < 0) {
+            throw new BusinessException(2005, "Bonus bakiyesi sıfırın altına düşemez");
+        }
+
+        // 7️⃣ BonusTransaction (audit) oluştur
         BonusTransactionEntity tx = new BonusTransactionEntity();
         tx.setCustomer(customer);
         tx.setAmount(amount);
-        tx.setDescription("Invoice işlem: " + invoice.getType());
+        tx.setDescription(txDescription);
         bonusTransactionRepository.save(tx);
 
-        // 6) Persist et
+        // 8️⃣ Customer & Invoice kaydet
         customerRepository.save(customer);
         InvoiceEntity savedInvoice = invoiceRepository.save(invoice);
 
-        // 7) DTO döndür
-        return invoiceMapper.toDto(savedInvoice);
-    }
+        // 9️⃣ DTO dön
+        return invoiceMapper.toDto(savedInvoice);    }
 }
