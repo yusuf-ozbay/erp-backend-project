@@ -1,4 +1,4 @@
-package erp.invoicemodule.models;
+package erp.invoicemodule.enums;
 
 public enum  InvoiceType {
 

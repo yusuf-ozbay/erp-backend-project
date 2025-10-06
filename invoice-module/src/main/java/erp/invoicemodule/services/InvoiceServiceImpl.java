@@ -14,7 +14,7 @@ import erp.invoicemodule.mapper.InvoiceLineMapper;
 import erp.invoicemodule.mapper.InvoiceMapper;
 import erp.invoicemodule.models.InvoiceEntity;
 import erp.invoicemodule.models.InvoiceLineEntity;
-import erp.invoicemodule.models.InvoiceType;
+import erp.invoicemodule.enums.InvoiceType;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

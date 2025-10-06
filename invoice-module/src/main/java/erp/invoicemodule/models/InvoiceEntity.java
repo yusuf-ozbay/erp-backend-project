@@ -2,6 +2,7 @@ package erp.invoicemodule.models;
 
 import erp.commonmodule.model.AbstractEntity;
 import erp.crmmodule.models.CustomerEntity;
+import erp.invoicemodule.enums.InvoiceType;
 import jakarta.persistence.*;
 import lombok.Data;
 
