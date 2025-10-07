@@ -1,10 +1,10 @@
 package erp.commonmodule.exception;
 
-public class BusinessException extends RuntimeException {
-    private final int status;
-    public BusinessException(int status, String message) {
-        super(message);
-        this.status = status;
-    }
-    public int getStatus() { return status; }
+/**
+ * İş kuralı ihlallerinde kullanılır.
+ * Örn: Yetersiz bonus, bakiye sıfır altı vb.
+ */
+public class BusinessException extends BaseException {
+    public BusinessException(ErrorCode error) { super(error); }
+    public BusinessException(ErrorCode error, String msg) { super(error, msg); }
 }

@@ -1,12 +1,10 @@
 package erp.invoicemodule.services;
 
-import erp.commonmodule.exception.BusinessException;
-
+import erp.commonmodule.exception.*; // 👈 ErrorCode + exception tipleri
 import erp.crmmodule.dao.BonusTransactionDao;
 import erp.crmmodule.dao.CustomerDao;
 import erp.crmmodule.models.BonusTransactionEntity;
 import erp.crmmodule.models.CustomerEntity;
-
 import erp.invoicemodule.dao.InvoiceDao;
 import erp.invoicemodule.dto.InvoiceDto;
 import erp.invoicemodule.dto.InvoiceRequestDto;
@@ -34,76 +32,72 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     /**
      * createInvoice:
-     * - Fatura kaydeder
-     * - Fatura tipine göre bonusu düşer veya ekler
-     * - BonusTransaction (audit) oluşturur
-     * - Bonus negatif olamaz (kontrol)
+     * - Fatura kaydı + satırları
+     * - Tipine göre bonusu düş/ekle
+     * - Audit: BonusTransaction
+     * - Kısıtlar: amount >= 0, bakiye < 0 olamaz
      */
     @Override
     @Transactional
     public InvoiceDto createInvoice(InvoiceRequestDto request) {
-        // 1️⃣ Müşteri bulunur
+        // 1) Müşteri var mı? yoksa 404 + 2001
         CustomerEntity customer = customerRepository.findById(request.getCustomerId())
-                .orElseThrow(() -> new BusinessException(2001, "Müşteri bulunamadı"));
+                .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.INVOICE_CUSTOMER_NOT_FOUND));
 
-        // 2️⃣ Fatura entity oluşturulur
+        // 2) Fatura entity
         InvoiceEntity invoice = new InvoiceEntity();
         invoice.setCustomer(customer);
-        invoice.setType(InvoiceType.valueOf(request.getType()));
+        invoice.setType(InvoiceType.valueOf(request.getType())); // enum doğrulaması
         invoice.setTotalAmount(request.getAmount());
 
-        // 3️⃣ Fatura satırlarını map et (InvoiceLineDto → InvoiceLineEntity)
+        // 3) Satırları map et → invoice ilişkilendir
         List<InvoiceLineEntity> lineEntities = invoiceLineMapper.toEntityList(request.getLines());
         lineEntities.forEach(line -> line.setInvoice(invoice));
         invoice.setLines(lineEntities);
 
-        // 4️⃣ Geçersiz bonus tutarı kontrolü (negatif amount)
+        // 4) amount negatif olamaz (doküman gereği)
         if (request.getAmount().compareTo(BigDecimal.ZERO) < 0) {
-            throw new BusinessException(2003, "Negatif bonus tutarı ile işlem yapılamaz");
+            throw new ValidationException(ErrorCode.INVOICE_NEGATIVE_AMOUNT);
         }
 
-        // 5️⃣ Bonus iş mantığı
+        // 5) Bonus iş akışı
         BigDecimal amount = request.getAmount();
-        String txDescription; // BonusTransaction için açıklama
+        String txDescription;
 
         switch (invoice.getType()) {
-            case RETAIL_SALE:
-            case WHOLESALE_SALE:
-                // Satış → bonus harcanır
+            case RETAIL_SALE, WHOLESALE_SALE -> {
+                // Satış → bonus harcanır; bakiye yeterli olmalı
                 if (customer.getBonus().compareTo(amount) < 0) {
-                    throw new BusinessException(2002, "Yetersiz bonus bakiyesi");
+                    throw new BusinessException(ErrorCode.INVOICE_BONUS_INSUFFICIENT);
                 }
                 customer.setBonus(customer.getBonus().subtract(amount));
                 txDescription = "Bonus harcandı (fatura: " + invoice.getType() + ")";
-                break;
-
-            case RETAIL_RETURN:
-            case WHOLESALE_RETURN:
-                // İade → bonus geri eklenir
+            }
+            case RETAIL_RETURN, WHOLESALE_RETURN -> {
+                // İade → bonus eklenir
                 customer.setBonus(customer.getBonus().add(amount));
                 txDescription = "Bonus iade edildi (fatura: " + invoice.getType() + ")";
-                break;
-
-            default:
-                throw new BusinessException(2004, "Geçersiz fatura tipi");
+            }
+            default -> throw new BusinessException(ErrorCode.INVOICE_INVALID_TYPE);
         }
 
-        // 6️⃣ Bonus negatif olamaz (güncel bakiye kontrolü)
+        // 6) Bakiye asla < 0 olamaz (ek güvenlik)
         if (customer.getBonus().compareTo(BigDecimal.ZERO) < 0) {
-            throw new BusinessException(2005, "Bonus bakiyesi sıfırın altına düşemez");
+            throw new BusinessException(ErrorCode.INVOICE_BALANCE_BELOW_ZERO);
         }
 
-        // 7️⃣ BonusTransaction (audit) oluştur
+        // 7) Audit kaydı (BonusTransaction)
         BonusTransactionEntity tx = new BonusTransactionEntity();
         tx.setCustomer(customer);
         tx.setAmount(amount);
         tx.setDescription(txDescription);
         bonusTransactionRepository.save(tx);
 
-        // 8️⃣ Customer & Invoice kaydet
+        // 8) Kalıcı hale getir
         customerRepository.save(customer);
         InvoiceEntity savedInvoice = invoiceRepository.save(invoice);
 
-        // 9️⃣ DTO dön
-        return invoiceMapper.toDto(savedInvoice);    }
+        // 9) DTO dön
+        return invoiceMapper.toDto(savedInvoice);
+    }
 }
