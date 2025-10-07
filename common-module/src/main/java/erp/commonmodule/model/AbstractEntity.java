@@ -2,10 +2,15 @@ package erp.commonmodule.model;
 
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Data;
 
 import java.time.Instant;
 
+/**
+ * Tüm Entity'ler için temel alanları (id, version, audit) sağlayan soyut sınıftır.
+ * Kolonların veritabanında daha temiz (sağda) görünmesi için
+ * audit alanları (createdAt/updatedAt) en sona taşınmıştır.
+ */
 @Data
 @MappedSuperclass
 public abstract class AbstractEntity {
@@ -14,8 +19,13 @@ public abstract class AbstractEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // --- Versiyon alanı hemen ID'den sonra kalabilir ---
     @Version
     private Long version;
+
+    // --- Geliştiricinin Entity'nin kendine ait alanları (name, email, vb.) buraya gelir ---
+
+    // --- Denetim (Audit) Alanları EN SONA taşındı ---
 
     @Column(name="created_at", nullable=false, updatable=false)
     private Instant createdAt;
@@ -25,6 +35,7 @@ public abstract class AbstractEntity {
 
     @PrePersist
     protected void onCreate() {
+        // Instant.now() kullanmaya devam ediyoruz
         createdAt = Instant.now();
         updatedAt = createdAt;
     }

@@ -57,4 +57,14 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error(ErrorCode.INTERNAL_ERROR.getCode(),
                         "Beklenmeyen bir hata: " + ex.getMessage()));
     }
+
+    // GlobalExceptionHandler içine ek/ayarla
+    @ExceptionHandler(ValidationException.class)
+    public ResponseEntity<ApiResponse<Void>> handleValidation(ValidationException ex) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST) // 400
+                .body(ApiResponse.error(ex.getCode(), ex.getMessage()));
+    }
+
+
 }
