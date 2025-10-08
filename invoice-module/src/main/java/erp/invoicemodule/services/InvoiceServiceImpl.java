@@ -32,12 +32,11 @@ public class InvoiceServiceImpl implements InvoiceService {
     private final InvoiceMapper invoiceMapper;
     private final InvoiceLineMapper invoiceLineMapper;
 
-    // 👇 Yeni: DAO yerine CRM servis katmanı
     private final CustomerService customerService;
 
 
     @PersistenceContext
-    private EntityManager em;  // 👈 yalın referans almak için
+    private EntityManager em;  //yalın referans almak için
 
     /**
      * createInvoice:
@@ -50,12 +49,10 @@ public class InvoiceServiceImpl implements InvoiceService {
     @Transactional
     public InvoiceDto createInvoice(InvoiceRequestDto request) {
         // 0) amount negatif olamaz
-        if (request.getAmount().compareTo(BigDecimal.ZERO) < 0) {
+        if (request.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
             throw new ValidationException(ErrorCode.INVOICE_NEGATIVE_AMOUNT);
         }
 
-        // 1) Müşteri var mı? (CRM servisinden doğruluyoruz)
-        CustomerDto customer = customerService.getById(request.getCustomerId()); // yoksa 404 fırlar
 
         // 2) Fatura tipi güvenli parse
         InvoiceType type;
@@ -70,7 +67,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         invoice.setType(type);
         invoice.setTotalAmount(request.getAmount());
 
-        // 🔴 KRİTİK: customer_id'yi set et
+
         CustomerEntity customerRef = em.getReference(CustomerEntity.class, request.getCustomerId());
         invoice.setCustomer(customerRef);
 

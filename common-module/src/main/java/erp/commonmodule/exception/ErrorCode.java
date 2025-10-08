@@ -22,7 +22,7 @@ public enum ErrorCode {
     // --- Invoice (2000-2999)
     INVOICE_CUSTOMER_NOT_FOUND(2001, HttpStatus.NOT_FOUND, "Müşteri bulunamadı"),
     INVOICE_BONUS_INSUFFICIENT(2002, HttpStatus.BAD_REQUEST, "Yetersiz bonus bakiyesi"),
-    INVOICE_NEGATIVE_AMOUNT(2003, HttpStatus.UNPROCESSABLE_ENTITY, "Negatif bonus tutarı ile işlem yapılamaz"),
+    INVOICE_NEGATIVE_AMOUNT(2003, HttpStatus.UNPROCESSABLE_ENTITY, "Negatif veya sıfır bonus tutarı ile işlem yapılamaz"),
     INVOICE_INVALID_TYPE(2004, HttpStatus.BAD_REQUEST, "Geçersiz fatura tipi"),
     INVOICE_BALANCE_BELOW_ZERO(2005, HttpStatus.BAD_REQUEST, "Bonus bakiyesi sıfırın altına düşemez"),
 

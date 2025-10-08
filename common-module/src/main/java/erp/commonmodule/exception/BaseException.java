@@ -17,10 +17,6 @@ public abstract class BaseException extends RuntimeException {
         this.error = error;
     }
 
-    protected BaseException(ErrorCode error, String overrideMessage) {
-        super(overrideMessage);
-        this.error = error;
-    }
 
     /** ApiResponse.status alanına gidecek business kod */
     public int getCode() { return error.getCode(); }

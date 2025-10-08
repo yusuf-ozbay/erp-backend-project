@@ -6,5 +6,4 @@ package erp.commonmodule.exception;
  */
 public class ValidationException extends BaseException {
     public ValidationException(ErrorCode error) { super(error); }
-    public ValidationException(ErrorCode error, String msg) { super(error, msg); }
 }
