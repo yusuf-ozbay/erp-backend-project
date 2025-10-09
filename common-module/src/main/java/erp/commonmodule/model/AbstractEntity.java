@@ -3,6 +3,8 @@ package erp.commonmodule.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.Instant;
 
@@ -23,19 +25,11 @@ public abstract class AbstractEntity {
     private Long version;
 
     @Column(name="created_at", nullable=false, updatable=false)
+    @CreatedDate
     private Instant createdAt;
 
-    @Column(name="updated_at")
+    @LastModifiedDate
+    @Column(name="updated_at", nullable=false, updatable=false)
     private Instant updatedAt;
 
-    @PrePersist
-    protected void onCreate() {
-        createdAt = Instant.now();
-        updatedAt = createdAt;
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = Instant.now();
-    }
 }

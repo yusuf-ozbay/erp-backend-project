@@ -2,11 +2,9 @@ package erp.invoicemodule.services;
 
 import erp.commonmodule.exception.BusinessException;
 import erp.commonmodule.exception.ErrorCode;
-import erp.commonmodule.exception.ResourceNotFoundException;
 import erp.commonmodule.exception.ValidationException;
-import erp.crmmodule.dto.CustomerDto;
 import erp.crmmodule.models.CustomerEntity;
-import erp.crmmodule.services.CustomerService; // 👈 DAO yerine CRM servisi
+import erp.crmmodule.services.CustomerService; // servis-2-servis entegrasyon
 import erp.invoicemodule.dao.InvoiceDao;
 import erp.invoicemodule.dto.InvoiceDto;
 import erp.invoicemodule.dto.InvoiceRequestDto;
@@ -53,9 +51,8 @@ public class InvoiceServiceImpl implements InvoiceService {
             throw new ValidationException(ErrorCode.INVOICE_NEGATIVE_AMOUNT);
         }
 
-
-        // 2) Fatura tipi güvenli parse
-        InvoiceType type;
+        // Tip parse (güvenli)
+        final InvoiceType type;
         try {
             type = InvoiceType.valueOf(request.getType());
         } catch (IllegalArgumentException ex) {

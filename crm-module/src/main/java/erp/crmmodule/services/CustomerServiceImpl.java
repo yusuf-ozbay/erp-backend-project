@@ -13,11 +13,14 @@ import erp.crmmodule.mapper.CustomerMapper;
 import erp.crmmodule.models.BonusEntity;
 import erp.crmmodule.models.BonusTransactionEntity;
 import erp.crmmodule.models.CustomerEntity;
+import jakarta.persistence.criteria.Predicate;               // 👈 Specification için
+import org.springframework.data.jpa.domain.Specification;   // 👈 Specification için
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -47,28 +50,35 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     /**
-     * Müşteri listesi (+ opsiyonel min/max bonus filtresi)
-     * - Doküman: GET /api/customers
-     * - İyileştirme: min veya max TEK BAŞINA da gelebilir.
+     * Müşteri listesi – Specification ile opsiyonel min/max filtreleri.
+     * - if/else karmaşasını kaldırır, ileride yeni filtre eklemek kolaylaşır.
      */
     @Override
     public List<CustomerDto> listCustomers(BigDecimal minBonus, BigDecimal maxBonus) {
-        if (minBonus != null && maxBonus != null) {
-            return customerMapper.toDtoList(customerRepository.findByBonusBetween(minBonus, maxBonus));
-        } else if (minBonus != null) {
-            return customerMapper.toDtoList(customerRepository.findByBonusBetween(minBonus, new BigDecimal("999999999999")));
-        } else if (maxBonus != null) {
-            return customerMapper.toDtoList(customerRepository.findByBonusBetween(BigDecimal.ZERO, maxBonus));
-        }
-        return customerMapper.toDtoList(customerRepository.findAll());
+
+        // Dinamik predicate listesi oluştur
+        Specification<CustomerEntity> spec = (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+
+            // minBonus varsa: bonus >= minBonus
+            if (minBonus != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("bonus"), minBonus));
+            }
+            // maxBonus varsa: bonus <= maxBonus
+            if (maxBonus != null) {
+                predicates.add(cb.lessThanOrEqualTo(root.get("bonus"), maxBonus));
+            }
+
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+
+        // Repo’dan entity listesi → stream ile DTO’ya mapleme
+        return customerRepository.findAll(spec)
+                .stream()
+                .map(customerMapper::toDto)   // MapStruct tekil mapper
+                .toList();
     }
 
-    /**
-     * Bonus ekleme (dokümandaki bonus tanımlama akışı)
-     * - POST /api/customers/{id}/bonus
-     * - Kural: amount > 0 olmalı (ValidationException)
-     * - Bonus tablosuna line kaydı + bakiye güncelle + audit (pozitif)
-     */
     @Override
     @Transactional
     public CustomerDto addBonus(Long customerId, BonusRequestDto request) {
@@ -101,17 +111,14 @@ public class CustomerServiceImpl implements CustomerService {
         if (!customerRepository.existsById(customerId)) {
             throw new ResourceNotFoundException(ErrorCode.CUSTOMER_NOT_FOUND);
         }
-        return bonusTransactionMapper.toDtoList(
-                bonusTransactionRepository.findByCustomer_IdOrderByCreatedAtDesc(customerId)
-        );
+
+        // Repo’dan entity listesi → stream ile DTO’ya mapleme
+        return bonusTransactionRepository.findByCustomer_IdOrderByCreatedAtDesc(customerId)
+                .stream()
+                .map(bonusTransactionMapper::toDto)  // MapStruct tekil mapper
+                .toList();
     }
 
-    // ====== Invoice → CRM service→service entegrasyonu için eklenenler ======
-
-    /**
-     * Müşteriyi ID ile getir (DTO).
-     * - NotFound kontrolünü burada veya üst katta verebilirsin. Burada veriyoruz.
-     */
     @Override
     public CustomerDto getById(Long customerId) {
         CustomerEntity c = customerRepository.findById(customerId)
@@ -154,7 +161,7 @@ public class CustomerServiceImpl implements CustomerService {
 
         BonusTransactionEntity tx = new BonusTransactionEntity();
         tx.setCustomer(customer);
-        tx.setAmount(delta); // 🔴 satışta negatif, iadede pozitif — doküman senaryosuna birebir uyum
+        tx.setAmount(delta);      // satışta negatif, iadede pozitif
         tx.setDescription(description);
         bonusTransactionRepository.save(tx);
     }
