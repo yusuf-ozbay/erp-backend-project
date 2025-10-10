@@ -9,6 +9,13 @@ import erp.crmmodule.models.CustomerEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+
+/**
+ * Sadece “müşteri var mı?” diye bakmak için küçük bir kapı (port).
+ * Amaç: Bonus tarafı, müşteri servisine sıkı bağlanmasın; sadece okuma yapsın.
+ * Böylece dairesel bağımlılık ve modüller arası gereksiz bağlılık oluşmaz.
+ */
+
 @Service
 @RequiredArgsConstructor
 public class CustomerQueryServiceImpl implements CustomerLookupPort {

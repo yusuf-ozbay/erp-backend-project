@@ -17,7 +17,7 @@ public abstract class BaseException extends RuntimeException {
         this.error = error;
     }
 
-
-    /** ApiResponse.status alanına gidecek business kod */
     public int getCode() { return error.getCode(); }
+
+
 }

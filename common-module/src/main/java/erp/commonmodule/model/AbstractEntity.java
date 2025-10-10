@@ -1,6 +1,5 @@
 package erp.commonmodule.model;
 
-
 import jakarta.persistence.*;
 import lombok.Data;
 import org.springframework.data.annotation.CreatedDate;
@@ -9,11 +8,6 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
 
-/**
- * Tüm Entity'ler için temel alanları (id, version, audit) sağlayan soyut sınıftır.
- * Kolonların veritabanında daha temiz (sağda) görünmesi için
- * audit alanları (createdAt/updatedAt) en sona taşınmıştır.
- */
 @Data
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
@@ -24,7 +18,7 @@ public abstract class AbstractEntity {
     private Long id;
 
     @Version
-    private Long version;
+    private Long version;  //Optimistic locking (eşzamanlı güncelleme çakışmalarına karşı)
 
     @Column(name="created_at", nullable=false, updatable=false)
     @CreatedDate

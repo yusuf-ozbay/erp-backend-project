@@ -8,17 +8,17 @@ import java.util.Map;
 
 @Data @Builder @NoArgsConstructor @AllArgsConstructor
 public class ApiResponse<T> {
-    private String outcome_type;       // "success" | "error"
-    private int status;                // 0 başarı, !=0 hata
-    private Map<String, Object> query; // filtre/sorgu parametreleri
-    private T data;                    // asıl payload
+    private String outcome_type;
+    private int status;
+    private Map<String, Object> query;
+    private T data;
     private List<String> uimessage;
     private List<String> iomessage;
 
     public static <T> ApiResponse<T> success(T data){
         return ApiResponse.<T>builder()
                 .outcome_type("success")
-                .status(0)
+                .status(200)
                 .query(Collections.emptyMap())
                 .data(data)
                 .uimessage(Collections.emptyList())

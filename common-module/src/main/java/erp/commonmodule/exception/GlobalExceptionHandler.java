@@ -14,13 +14,10 @@ import java.util.stream.Collectors;
 /**
  * Uygulama genelindeki exception'ları yakalar ve
  * dokümandaki generic response formatında döner.
- *
- * Not: ApiResponse yapını değiştirmiyoruz.
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    // 🔹 Uygulama özel exception'ları (BaseException) tek yerden yönet
     @ExceptionHandler(BaseException.class)
     public ResponseEntity<ApiResponse<Void>> handleBase(BaseException ex) {
         HttpStatus http = ex.getError().getHttpStatus();
@@ -29,7 +26,6 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error(ex.getCode(), ex.getMessage()));
     }
 
-    // 🔹 Bean Validation (örn. @Valid) hataları
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponse<Void>> handleMethodArgInvalid(MethodArgumentNotValidException ex) {
         String detailed = ex.getBindingResult().getFieldErrors().stream()
@@ -40,7 +36,6 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error(ErrorCode.VALIDATION_FAILED.getCode(), "Geçersiz veri: " + detailed));
     }
 
-    // 🔹 DB bütünlük ihlalleri (unique key vs.)
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ApiResponse<Void>> handleDataIntegrity(DataIntegrityViolationException ex) {
         return ResponseEntity
@@ -49,7 +44,6 @@ public class GlobalExceptionHandler {
                         "Veritabanı bütünlük hatası: " + ex.getMostSpecificCause().getMessage()));
     }
 
-    // 🔹 Beklenmeyen hatalar
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleAny(Exception ex){
         return ResponseEntity
@@ -58,7 +52,6 @@ public class GlobalExceptionHandler {
                         "Beklenmeyen bir hata: " + ex.getMessage()));
     }
 
-    // GlobalExceptionHandler içine ek/ayarla
     @ExceptionHandler(ValidationException.class)
     public ResponseEntity<ApiResponse<Void>> handleValidation(ValidationException ex) {
         return ResponseEntity
