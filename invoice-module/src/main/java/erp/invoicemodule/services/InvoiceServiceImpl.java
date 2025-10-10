@@ -4,7 +4,7 @@ import erp.commonmodule.exception.BusinessException;
 import erp.commonmodule.exception.ErrorCode;
 import erp.commonmodule.exception.ValidationException;
 import erp.crmmodule.models.CustomerEntity;
-import erp.crmmodule.services.CustomerService; // servis-2-servis entegrasyon
+import erp.crmmodule.services.CustomerService;
 import erp.invoicemodule.dao.InvoiceDao;
 import erp.invoicemodule.dto.InvoiceDto;
 import erp.invoicemodule.dto.InvoiceRequestDto;

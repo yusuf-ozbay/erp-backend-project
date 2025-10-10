@@ -23,12 +23,6 @@ public interface CustomerService {
     // === Invoice -> CRM "service→service" entegrasyonu için eklenenler ===
 
     /**
-     * Müşteriyi ID ile getirir (404 davranışı üst katmanda verilebilir).
-     * Invoice tarafı isterse kontrol amaçlı kullanır.
-     */
-    CustomerDto getById(Long customerId);
-
-    /**
      * Bonus bakiyesine delta uygular ve BonusTransaction (audit) kaydı oluşturur.
      * - Satışta delta NEGATİF (ör. -200)
      * - İadede delta POZİTİF (ör. +50)
