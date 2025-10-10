@@ -138,7 +138,7 @@ Uygulama:
 
 ---
 
-## 9) API’ler (dokümandaki ile birebir)
+## 9) API’ler 
 
 * **Müşteri**
 
@@ -225,7 +225,7 @@ Alt modüller ihtiyaç duyduklarını **sadece** import eder; gereksiz bağıml�
 
 ---
 
-## 13) Tasarım Tercihleri – “Neden böyle yaptık?” (güncel)
+## 13) Tasarım Tercihleri – “Neden böyle yaptık?” 
 
 * **Bonus tek kaynak**: Bonus kuralı **CustomerService**’te; tekrar yok, kurallar tek yerden yönetiliyor.
 * **Ledger ayrımı**: Ledger satırı yazma işi **BonusTransactionService**’e verildi. Böylece **iş kuralı** (bakiye/validasyon) ile **persist detayları** (hareket kaydı) ayrıldı.
@@ -235,7 +235,7 @@ Alt modüller ihtiyaç duyduklarını **sadece** import eder; gereksiz bağıml�
 
 ---
 
-## 14) Dokümandaki Ek Notlara Karşılık (güncel)
+## 14) Dokümandaki Ek Notlara Karşılık 
 
 * **“Line tablolarla yönetim”** → `InvoiceLine` & `BonusTransaction` **line** olarak kuruldu.
 * **“BonusTransaction hem ekleme hem harcama/iade işlemine kayıt atmalı”** → `CustomerService` delta’ya göre çağırır, `BonusTransactionService` satırı kaydeder.
@@ -245,9 +245,6 @@ Alt modüller ihtiyaç duyduklarını **sadece** import eder; gereksiz bağıml�
 * **“Mapper + DTO + Lombok”** → Tamamı kullanıldı.
 
 ---
-“Mapper + DTO + Lombok” → Tamamı kullanıldı.
----
-
 
 ## 15) Kısa Özet
 
