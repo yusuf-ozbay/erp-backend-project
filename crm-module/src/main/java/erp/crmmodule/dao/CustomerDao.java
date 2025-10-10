@@ -15,4 +15,6 @@ public interface CustomerDao extends JpaRepository<CustomerEntity, Long>, JpaSpe
     boolean existsByEmail(String email);
 
     List<CustomerEntity> findByBonusBetween(BigDecimal min, BigDecimal max);
+
+
 }

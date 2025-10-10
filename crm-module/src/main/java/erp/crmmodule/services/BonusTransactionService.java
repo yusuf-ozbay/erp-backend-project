@@ -15,7 +15,7 @@ import java.util.List;
  * NOT: Bu arayüz, dış dünyaya "Bonus operasyonları"nı sunar.
  *      İçeride hangi repository'ler kullanıldığı gizlidir (DIP).
  */
-public interface BonusLedgerService {
+public interface BonusTransactionService {
 
     /**
      * Pozitif bonus ekleme (kampanya, manuel yükleme vb.)
@@ -24,7 +24,7 @@ public interface BonusLedgerService {
      * @param description Açıklama (UI/rapor için)
      * @return Güncellenmiş CustomerEntity (bakiye güncellenmiş hali)
      */
-    CustomerEntity addBonus(Long customerId, BigDecimal amount, String description);
+    //CustomerEntity addBonus(Long customerId, BigDecimal amount, String description);
 
     /**
      * Delta uygulama:
@@ -35,7 +35,7 @@ public interface BonusLedgerService {
      * @param description Açıklama
      * @return Güncellenmiş CustomerEntity
      */
-    CustomerEntity applyDelta(Long customerId, BigDecimal delta, String description);
+    //CustomerEntity applyDelta(Long customerId, BigDecimal delta, String description);
 
     /**
      * Bonus hareket listesini döner.
@@ -43,4 +43,6 @@ public interface BonusLedgerService {
      * @return BonusTransactionDto listesi (tarih, miktar, açıklama)
      */
     List<BonusTransactionDto> listTransactions(Long customerId);
+
+    void save(CustomerEntity customer, BigDecimal delta, String description);
 }

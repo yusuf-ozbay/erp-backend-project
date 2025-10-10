@@ -3,6 +3,8 @@ package erp.crmmodule.services;
 import erp.crmmodule.dto.CustomerDto;
 import erp.crmmodule.dto.BonusRequestDto;
 import erp.crmmodule.dto.BonusTransactionDto;
+import erp.crmmodule.models.CustomerEntity;
+import jakarta.transaction.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -20,13 +22,11 @@ public interface CustomerService {
     CustomerDto addBonus(Long customerId, BonusRequestDto request);
     List<BonusTransactionDto> listBonusTransactions(Long customerId);
 
-    // === Invoice -> CRM "service→service" entegrasyonu için eklenenler ===
-
-    /**
-     * Bonus bakiyesine delta uygular ve BonusTransaction (audit) kaydı oluşturur.
-     * - Satışta delta NEGATİF (ör. -200)
-     * - İadede delta POZİTİF (ör. +50)
-     * - Negatif bakiyeye düşme kontrolü burada yapılır (tek otorite CRM).
-     */
     void applyBonusChange(Long customerId, BigDecimal delta, String description);
+
+    CustomerEntity addBonus(Long customerId, BigDecimal amount, String description);
+
+    void applyDelta(Long customerId, BigDecimal delta, String description);
+
+
 }

@@ -130,8 +130,7 @@ Invoice, CRM’in “bonus değiştir” operasyonuna gider. CRM tarafı da “m
 ## 8) JPA & Audit (createdAt/updatedAt)
 
 * **`AbstractEntity`**: tüm entity’lerde **id, version, createdAt, updatedAt**.
-* **JPA Auditing** aktif: `@CreatedDate`, `@LastModifiedDate` alanlarını otomatik doldurur (config: `@EnableJpaAuditing`).
-* **Not-Null** audit kolonları yüzünden testte aldığın hatayı bu yapı çözdü.
+* **JPA Auditing** aktif: `@CreatedDate`, `@LastModifiedDate` alanlarını otomatik doldurur .
 
 ---
 
