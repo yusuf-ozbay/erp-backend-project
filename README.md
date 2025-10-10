@@ -6,7 +6,7 @@ Bu repo; **müşteri**, **bonus** ve **fatura** süreçlerini kapsayan, modüler
 
 ---
 
-## 1) Projenin Amacı (dokümantasyon ile birebir)
+## 1) Projenin Amacı 
 
 * “**Java + Spring Boot + PostgreSQL** kullanarak müşteriler, bonus puanları ve satış/iade faturaları ile çalışan bir backend.”
 * Hedefler:
@@ -19,7 +19,7 @@ Bu repo; **müşteri**, **bonus** ve **fatura** süreçlerini kapsayan, modüler
 
 ---
 
-## 2) Modüler Mimari (güncel)
+## 2) Modüler Mimari 
 
 Proje, **çok-modüllü** Maven yapısındadır:
 
@@ -60,7 +60,7 @@ Proje, **çok-modüllü** Maven yapısındadır:
 
 ---
 
-## 4) Bonus Mantığı (tek otorite: Bonus Ledger)
+## 4) Bonus Mantığı (tek otorite: BonusTransaction )
 
 Doküman:
 
@@ -74,7 +74,7 @@ Uygulama:
     * **Satış** → `delta = -amount`
     * **İade** → `delta = +amount`
     * **Manuel bonus ekleme** → `delta = +amount`
-* Delta’yı **tek bir servis** uygular: `BonusLedgerService`
+* Delta’yı **tek bir servis** uygular: `BonusTransactionService`
 
     * **Bakiye Güncelleme**
     * **Hareket (BonusTransaction) yazma**
