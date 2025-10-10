@@ -30,7 +30,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class BonusLedgerServiceImpl implements BonusLedgerService {
 
-    private final BonusTransactionDao bonusTransactionRepository;
+    private final BonusTransactionDao bonusTransactionDao;
     private final BonusTransactionMapper bonusTransactionMapper;
 
     private final CustomerLookupPort customerLookup;
@@ -71,7 +71,7 @@ public class BonusLedgerServiceImpl implements BonusLedgerService {
     @Override
     public List<BonusTransactionDto> listTransactions(Long customerId) {
 
-        return bonusTransactionRepository.findByCustomer_IdOrderByCreatedAtDesc(customerId)
+        return bonusTransactionDao.findByCustomer_IdOrderByCreatedAtDesc(customerId)
                 .stream()
                 .map(bonusTransactionMapper::toDto)
                 .toList();
@@ -89,7 +89,7 @@ public class BonusLedgerServiceImpl implements BonusLedgerService {
         tx.setCustomer(customer);
         tx.setAmount(delta);
         tx.setDescription(description);
-        bonusTransactionRepository.save(tx);
+        bonusTransactionDao.save(tx);
 
         return customer;
     }

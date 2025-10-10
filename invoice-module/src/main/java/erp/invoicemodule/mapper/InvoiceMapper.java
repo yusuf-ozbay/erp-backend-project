@@ -12,16 +12,9 @@ import java.util.List;
 @Mapper(componentModel = "spring", uses = {InvoiceLineMapper.class})
 public interface InvoiceMapper {
 
-    // Entity -> DTO
     @Mapping(source = "customer.id", target = "customerId")
     InvoiceDto toDto(InvoiceEntity entity);
 
 
 }
 
-
-/**
- * InvoiceMapper
- * - InvoiceEntity <-> InvoiceDto dönüşümü
- * - CustomerEntity -> sadece customerId olarak DTO'ya mapleniyor.
- */

@@ -8,9 +8,3 @@ public interface InvoiceService {
     InvoiceDto createInvoice(InvoiceRequestDto request);
 }
 
-
-/**
- * InvoiceService
- * - Dokümandaki fatura ile ilgili operasyonları tanımlar.
- * - Şu an için sadece "Fatura oluşturma" var.
- */

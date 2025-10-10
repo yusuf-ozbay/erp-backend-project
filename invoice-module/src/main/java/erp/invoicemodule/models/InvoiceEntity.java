@@ -10,10 +10,6 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * InvoiceEntity
- * - Dokümandaki tanıma uygun: Customer bağlantılı, type alanı var, line tabloları var.
- */
 @Data
 @Entity
 @Table(name = "invoices")
@@ -30,7 +26,6 @@ public class InvoiceEntity extends AbstractEntity {
     @Column(name = "total_amount", nullable = false, precision = 19, scale = 2)
     private BigDecimal totalAmount;
 
-    // Line tablolarla ilişki (1-N)
     @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<InvoiceLineEntity> lines = new ArrayList<>();
 }

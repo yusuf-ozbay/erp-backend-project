@@ -20,12 +20,12 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class CustomerQueryServiceImpl implements CustomerLookupPort {
 
-    private final CustomerDao customerRepository;
+    private final CustomerDao customerDao;
     private final CustomerMapper customerMapper;
 
     @Override
     public CustomerDto getById(Long id) {
-        CustomerEntity c = customerRepository.findById(id)
+        CustomerEntity c = customerDao.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(ErrorCode.CUSTOMER_NOT_FOUND));
         return customerMapper.toDto(c);
     }

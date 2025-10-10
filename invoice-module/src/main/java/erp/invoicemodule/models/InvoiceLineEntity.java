@@ -25,10 +25,3 @@ public class InvoiceLineEntity extends AbstractEntity {
     @Column(nullable = false)
     private BigDecimal price;
 }
-
-
-/**
- * InvoiceLineEntity
- * - Dokümanda "line tablolarla yönetilmeli" maddesine uygun.
- * - Her fatura satırı ürün, miktar, fiyat içeriyor.
- */

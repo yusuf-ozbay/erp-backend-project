@@ -14,18 +14,3 @@ public class InvoiceRequestDto {
     private List<InvoiceLineDto> lines;
 }
 
-
-
-/**
- * InvoiceRequestDto
- * - Dokümandaki örneğe birebir uyuyor:
- *   {
- *     "customerId": 1,
- *     "type": "RETAIL_SALE",
- *     "amount": 200,
- *     "lines": [
- *       {"productId": 1, "quantity": 2, "price": 100}
- *     ]
- *   }
- * - Burada 'amount' = toplam tutar.
- */

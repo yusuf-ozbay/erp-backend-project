@@ -19,9 +19,3 @@ public interface InvoiceLineMapper {
 
 }
 
-
-/**
- * InvoiceLineMapper
- * - Entity <-> DTO dönüşümlerini otomatik yapar.
- * - Dokümanda "Entity ↔ DTO dönüşümleri için Mapper kullanılacak" şartı var.
- */

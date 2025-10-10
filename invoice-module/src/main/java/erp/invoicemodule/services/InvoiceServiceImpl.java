@@ -26,23 +26,15 @@ import java.util.List;
 @RequiredArgsConstructor
 public class InvoiceServiceImpl implements InvoiceService {
 
-    private final InvoiceDao invoiceRepository;
+    private final InvoiceDao invoiceDao;
     private final InvoiceMapper invoiceMapper;
     private final InvoiceLineMapper invoiceLineMapper;
 
     private final CustomerService customerService;
 
-
     @PersistenceContext
-    private EntityManager em;  //yalın referans almak için
+    private EntityManager em;
 
-    /**
-     * createInvoice:
-     * - Fatura kaydı + satırları
-     * - Tipine göre bonusu CRM servisinden düş/ekle (delta)
-     * - Audit ve bakiye kuralı CRM’de uygulanır (tek otorite)
-     * - amount >= 0, invalid type kontrolü burada
-     */
     @Override
     @Transactional
     public InvoiceDto createInvoice(InvoiceRequestDto request) {
@@ -51,7 +43,6 @@ public class InvoiceServiceImpl implements InvoiceService {
             throw new ValidationException(ErrorCode.INVOICE_NEGATIVE_AMOUNT);
         }
 
-        // Tip parse (güvenli)
         final InvoiceType type;
         try {
             type = InvoiceType.valueOf(request.getType());
@@ -59,23 +50,17 @@ public class InvoiceServiceImpl implements InvoiceService {
             throw new BusinessException(ErrorCode.INVOICE_INVALID_TYPE);
         }
 
-        // 3) Fatura entity
         InvoiceEntity invoice = new InvoiceEntity();
         invoice.setType(type);
         invoice.setTotalAmount(request.getAmount());
 
-
         CustomerEntity customerRef = em.getReference(CustomerEntity.class, request.getCustomerId());
         invoice.setCustomer(customerRef);
 
-
-        // customerId DTO’dan maplenecek (InvoiceMapper ile), burada sadece satırları setliyoruz
         List<InvoiceLineEntity> lineEntities = invoiceLineMapper.toEntityList(request.getLines());
         lineEntities.forEach(line -> line.setInvoice(invoice));
         invoice.setLines(lineEntities);
 
-        // 4) Bonus delta’yı CRM uygulasın + audit’i CRM oluştursun
-        //    Satış → delta NEGATİF, İade → delta POZİTİF (doküman senaryosu)
         BigDecimal delta = switch (type) {
             case RETAIL_SALE, WHOLESALE_SALE -> request.getAmount().negate();
             case RETAIL_RETURN, WHOLESALE_RETURN -> request.getAmount();
@@ -83,12 +68,8 @@ public class InvoiceServiceImpl implements InvoiceService {
         String desc = (delta.signum() < 0 ? "Bonus harcandı" : "Bonus iade edildi") + " (fatura: " + type + ")";
         customerService.applyBonusChange(request.getCustomerId(), delta, desc);
 
-        // 5) Faturayı kaydet
-        //    Not: Customer relation’u mapper ile setlenir (customerId üzerinden)
-        //    DTO → Entity map’inde customerId -> customer.id kuralı InvoiceMapper’da tanımlı.
-        InvoiceEntity saved = invoiceRepository.save(invoice);
+        InvoiceEntity saved = invoiceDao.save(invoice);
 
-        // 6) DTO dön
         return invoiceMapper.toDto(saved);
     }
 }

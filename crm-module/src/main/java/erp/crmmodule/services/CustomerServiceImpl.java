@@ -22,20 +22,20 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CustomerServiceImpl implements CustomerService {
 
-    private final CustomerDao customerRepository;
+    private final CustomerDao customerDao;
     private final CustomerMapper customerMapper;
     private final BonusLedgerService bonusLedgerService;
 
     @Override
     public CustomerDto createCustomer(CustomerDto customerDto) {
 
-        if (customerRepository.existsByEmail(customerDto.getEmail())) {
+        if (customerDao.existsByEmail(customerDto.getEmail())) {
             throw new ValidationException(ErrorCode.CUSTOMER_EMAIL_EXISTS);
         }
 
         CustomerEntity entity = customerMapper.toEntity(customerDto);
         entity.setBonus(BigDecimal.ZERO);
-        CustomerEntity saved = customerRepository.save(entity);
+        CustomerEntity saved = customerDao.save(entity);
         return customerMapper.toDto(saved);
     }
 
@@ -50,7 +50,7 @@ public class CustomerServiceImpl implements CustomerService {
             return cb.and(preds.toArray(new Predicate[0]));
         };
 
-        return customerRepository.findAll(spec)
+        return customerDao.findAll(spec)
                 .stream()
                 .map(customerMapper::toDto)
                 .toList();
