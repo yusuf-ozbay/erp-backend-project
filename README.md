@@ -19,7 +19,7 @@ Bu repo; **müşteri**, **bonus** ve **fatura** süreçlerini kapsayan, modüler
 
 ---
 
-## 2) Modüler Mimari (doküman beklentisi: en az iki modül)
+## 2) Modüler Mimari (güncel)
 
 Proje, **çok-modüllü** Maven yapısındadır:
 
@@ -27,22 +27,23 @@ Proje, **çok-modüllü** Maven yapısındadır:
   Ortak şeyler: `ApiResponse`, `ErrorCode`, exception hiyerarşisi, `AbstractEntity` (id/version/audit), `JpaAuditingConfig`.
 
 * **`crm-module`**
-  **Müşteri** ve **bonus ledger** (hareket defteri) burada.
+  **Müşteri** ve **bonus yönetimi** burada.
 
-    * **CustomerEntity**: id, name, email, bonus (kalan bonus).
-    * **BonusTransactionEntity (line)**: her bonus değişimi (ekleme/harcama/iade) için bir satır.
-    * **BonusLedgerService**: bonusun tek doğruluk noktası (delta mantığı + hareket kaydı).
+  * **CustomerEntity**: id, name, email, bonus (kalan bonus).
+  * **BonusTransactionEntity (line)**: her bonus değişimi (ekleme/harcama/iade) için bir satır.
+  * **CustomerService**: bonusun **tek doğruluk noktası**; bakiye günceller ve hareket oluşturmayı tetikler.
+  * **BonusTransactionService**: sadece **ledger (hareket) satırını** kalıcılaştırır (persist).
 
 * **`invoice-module`**
   **Fatura başlık** + **fatura satırları (line)** burada.
 
-    * **InvoiceEntity**: müşteri bağlantısı + tip (`RETAIL_SALE`, `WHOLESALE_SALE`, `RETAIL_RETURN`, `WHOLESALE_RETURN`) + toplam tutar.
-    * **InvoiceLineEntity (line)**: productId, quantity, price.
+  * **InvoiceEntity**: müşteri bağlantısı + tip (`RETAIL_SALE`, `WHOLESALE_SALE`, `RETAIL_RETURN`, `WHOLESALE_RETURN`) + toplam tutar.
+  * **InvoiceLineEntity (line)**: productId, quantity, price.
 
 * **`erp-application`**
   Spring Boot starter (main app), swagger-ui, full integration testler.
 
-> **Not:** Dokümanda “Invoice servisten müşteri DAO’suna gidilmemeli” deniyordu. Biz de **Invoice → CRM’e sadece servis arayüzü** ile gittik; **DAO’ya inmedik**.
+> **Not:** “Invoice servisten müşteri DAO’suna gidilmemeli” beklentisine uygun olarak **Invoice**, bonus etkisini **CustomerService** üstünden uygular; **CRM DAO’suna inmez**.
 
 ---
 
@@ -82,14 +83,17 @@ Uygulama:
 
 ---
 
-## 5) Katmanlar & Bağımlılıklar
+## 5) Katmanlar & Bağımlılıklar (güncel)
 
-* **Controller** → **Service (DTO ile konuşur)** → **DAO/Entity (servis içinde)**
-* **InvoiceService** bonusu **kendisi hesaplamaz**; sadece **delta’yı** hesaplar ve **CRM’e** “uygula” der.
-* **CRM** tarafında bonusun kuralı/ledger kaydı **tek noktada**.
+* **Controller** → **Service (DTO ile)** → **DAO/Entity (servis içinde)**
+* **InvoiceService** bonusu **hesaplamaz**; sadece fatura tipine göre **delta** çıkarır ve **CustomerService.applyBonusChange(...)** çağırır.
+* **CustomerService** bonusun kuralını merkezi olarak uygular:
 
-**Dairesel bağımlılığı kırma:**
-Invoice, CRM’in “bonus değiştir” operasyonuna gider. CRM tarafı da “müşteri var mı?” doğrulaması için **CustomerLookupPort** adında **ince bir arayüz** sağlar. Böylece **Invoice ↔ CRM** arasında doğrudan, çift yönlü sıkı bağımlılık oluşmaz.
+  * Bakiye kontrolü (yetersiz bonus vs.)
+  * Bakiye güncelleme
+  * **BonusTransactionService** ile **ledger satırı** oluşturma
+
+> Artık **dairesel bağımlılık yok**. `CustomerService` → `BonusTransactionService` tek yönlü bağımlılık mevcut.
 
 ---
 
@@ -221,25 +225,27 @@ Alt modüller ihtiyaç duyduklarını **sadece** import eder; gereksiz bağıml�
 
 ---
 
-## 13) Tasarım Tercihleri – “Neden böyle yaptık?”
+## 13) Tasarım Tercihleri – “Neden böyle yaptık?” (güncel)
 
-* **Bonus tek kaynak**: Bonus mantığı tek yerde (BonusLedgerService) — **tekrar yok**, hata alanı küçük.
-* **Port (CustomerLookupPort)**: Invoice/Bonus CRM’i **servis üzerinden** değil, **ince bir arayüz** üzerinden “sadece okur”; böylece **dairesel bağımlılık** kesildi.
-* **DTO/Mapper**: Controller seviyesi **sade ve stabil** kaldı. Entity’ler iç detay olarak kaldı.
-* **Transaction**: Bonus + ledger + fatura işlemleri **tek transaction** ile tutarlı.
+* **Bonus tek kaynak**: Bonus kuralı **CustomerService**’te; tekrar yok, kurallar tek yerden yönetiliyor.
+* **Ledger ayrımı**: Ledger satırı yazma işi **BonusTransactionService**’e verildi. Böylece **iş kuralı** (bakiye/validasyon) ile **persist detayları** (hareket kaydı) ayrıldı.
+* **DTO/Mapper**: Controller sade kalır; Entity iç detayı servis/DAO katmanında.
+* **Transaction**: Bonus + ledger + fatura akışları tek transaction ile tutarlı.
 * **Audit + Version**: İzlenebilirlik ve optimistic locking için temel zemin hazır.
 
 ---
 
-## 14) Dokümandaki Ek Notlara Karşılık Verdiğimiz Noktalar
+## 14) Dokümandaki Ek Notlara Karşılık (güncel)
 
-* **“Line tablolarla yönetim”** → InvoiceLine & BonusTransaction **line** olarak kuruldu.
-* **“BonusTransaction hem ekleme hem harcama/iade işlemine kayıt atmalı”** → Delta işaretli hareket satırları yazılıyor.
-* **“Bonus negatif olamaz”** → Satışta yetersiz bonus hatası, savunmacı negatif bakiye kontrolü.
+* **“Line tablolarla yönetim”** → `InvoiceLine` & `BonusTransaction` **line** olarak kuruldu.
+* **“BonusTransaction hem ekleme hem harcama/iade işlemine kayıt atmalı”** → `CustomerService` delta’ya göre çağırır, `BonusTransactionService` satırı kaydeder.
+* **“Bonus negatif olamaz”** → Satışta yetersiz bonus hatası ve savunmacı negatif bakiye kontrolü var.
 * **“Response generic olmalı”** → `ApiResponse` her yerde.
-* **“Invoice servisten müşteri DAO’suna gitme”** → Invoice → CRM **servis/port** ile.
+* **“Invoice servisten müşteri DAO’suna gitme”** → Invoice → **CustomerService** ile (DAO’ya inmeden).
 * **“Mapper + DTO + Lombok”** → Tamamı kullanıldı.
 
+---
+“Mapper + DTO + Lombok” → Tamamı kullanıldı.
 ---
 
 
