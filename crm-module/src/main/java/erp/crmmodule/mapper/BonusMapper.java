@@ -15,8 +15,3 @@ public interface BonusMapper {
 }
 
 
-
-/**
- * BonusMapper
- * - BonusEntity <-> BonusDto dönüşümünü yapar.
- */

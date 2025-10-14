@@ -15,8 +15,3 @@ public class BonusDto {
 }
 
 
-/**
- * BonusDto
- * - Dokümanda: "Bonus: Customer’a eklenen bonus kayıtları, tarih, miktar, açıklama."
- * - Entity'den sadece dışarıya gösterilmesi gereken alanlar alınır.
- */

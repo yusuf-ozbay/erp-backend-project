@@ -12,10 +12,3 @@ public class CustomerDto {
 }
 
 
-
-/**
- * DTO = Data Transfer Object
- * - Dokümanda beklenti: Controller katmanında Entity değil DTO kullanılacak.
- * - Bu sınıf CustomerEntity'nin dış dünyaya yansıyan basit versiyonu.
- * - Kalan bonus (bonusBalance) doğrudan burada gösterilecek (dokümanda özellikle belirtilmiş).
- */

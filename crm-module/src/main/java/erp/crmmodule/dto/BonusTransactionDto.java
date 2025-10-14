@@ -15,8 +15,3 @@ public class BonusTransactionDto {
 
 
 
-/**
- * BonusTransactionDto
- * - Dokümanda: "BonusTransaction: Müşterinin bonus değişimlerini kaydeder, tarih, miktar, açıklama."
- * - Yani sadece bu alanlar DTO'da olmalı, fazlası yok.
- */

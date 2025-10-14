@@ -7,11 +7,7 @@ import org.mapstruct.factory.Mappers;
 
 import java.util.List;
 
-/**
- * BonusTransactionMapper
- * - BonusTransactionEntity <-> BonusTransactionDto dönüşümü
- * - Dokümanda "BonusTransaction: tarih, miktar, açıklama" belirtildiği için sadece bunlar DTO'ya yansır.
- */
+
 @Mapper(componentModel = "spring")
 public interface BonusTransactionMapper {
 

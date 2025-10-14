@@ -7,7 +7,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update    # testler sonunda tabloyu temizler
+      ddl-auto: update
     show-sql: true
     properties:
       hibernate:

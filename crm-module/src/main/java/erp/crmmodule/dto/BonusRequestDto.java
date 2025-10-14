@@ -12,9 +12,3 @@ public class BonusRequestDto {
 }
 
 
-
-/**
- * BonusRequestDto
- * - API çağrısı ile bonus eklemek için kullanılacak request body.
- * - Dokümandaki örneğe birebir uyuyor: { "amount": 500, "description": "..." }
- */

@@ -16,7 +16,7 @@ import java.util.List;
  * Bonusun “tek doğruluk noktası”.
  * Burada iki şey yapılır:
  * 1) Müşteri bakiyesini güncelle (ekle/harca/iade → delta mantığı)
- * 2) Her değişiklik için hareket (ledger) kaydı at
+ * 2) Her değişiklik için hareket (Transaction) kaydı at
  * Amaç: Bonus mantığı farklı yerlerde kopyalanmasın, tek yerden yönetilsin.
  */
 

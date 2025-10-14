@@ -16,7 +16,6 @@ import java.util.List;
  */
 public interface CustomerService {
 
-    // === Dokümandaki mevcut uçların karşılığı ===
     CustomerDto createCustomer(CustomerDto customerDto);
     List<CustomerDto> listCustomers(BigDecimal minBonus, BigDecimal maxBonus);
     CustomerDto addBonus(Long customerId, BonusRequestDto request);

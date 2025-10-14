@@ -7,11 +7,7 @@ import org.mapstruct.factory.Mappers;
 
 import java.util.List;
 
-/**
- * MapStruct Mapper
- * - Dokümanda: "Entity ↔ DTO dönüşümleri için Mapper kullanılacak (MapStruct)."
- * - Bu arayüz sayesinde CustomerEntity <-> CustomerDto dönüşümleri otomatik üretilir.
- */
+
 @Mapper(componentModel = "spring")
 public interface CustomerMapper {
 
